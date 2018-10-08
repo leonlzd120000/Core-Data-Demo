@@ -8,16 +8,22 @@
 
 import UIKit
 
+import CoreData
+
 class TableViewController: UITableViewController {
 
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+
+    var itemArray = [Item]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        
+        print(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! as! String)
+        
+        
+     loadItems()
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -29,67 +35,95 @@ class TableViewController: UITableViewController {
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 0
+        return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 0
+        print(itemArray.count)
+        return itemArray.count
     }
 
-    /*
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
 
-        // Configure the cell...
+//        cell.textLabel?.text = itemArray[indexPath.row].title
+        
+         cell.textLabel?.text = itemArray[indexPath.row].title
 
         return cell
     }
-    */
 
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print(itemArray[indexPath.row])
+        
+       context.delete(itemArray[indexPath.row])
+        
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        saveItems()
     }
-    */
+    
 
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+    @IBAction func addButtonPressed(_ sender: AnyObject) {
+        
+        var textField = UITextField()
+        
+        let alert = UIAlertController(title: "Add Sth", message: "You need add", preferredStyle: .alert)
+        
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "add"
+            textField = alertTextField
+        }
+        
+        let action = UIAlertAction(title: "ok", style: .default) { (action) in
+            
+            
+            let newItem = Item(context: self.context)
+            
+            newItem.title = textField.text
+            
+            newItem.done = false
+            
+            self.itemArray.append(newItem)
+            
+            self.saveItems()
+           
+            print(textField.text!)
+        }
+        
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion: nil)
+        
+        
     }
-    */
+    
+    
+    func saveItems(){
+        
+        do {
+            try context.save()
+        } catch {
+            print("error saving context\(error) ")
+        }
 
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
+        
     }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
+    
+    func loadItems(){
+      
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        do{
+            
+            try context.fetch(request)
+            
+        }catch{
+            print("error fetching\(error)")
+        }
     }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
+    
 }
+
