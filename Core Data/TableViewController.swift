@@ -19,7 +19,6 @@ class TableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! as! String)
         
         
      loadItems()
